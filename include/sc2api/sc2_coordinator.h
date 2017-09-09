@@ -46,6 +46,11 @@ public:
     //! \param value True to be realtime, false otherwise.
     void SetRealtime(bool value);
 
+    //! Specifies whether the game should run in fullscreen or not.
+    //! This usually indicates that a real player is using the first launched instance to play.
+    //! It should be used in combination with SetRealtime(true) otherwise the game has no sound.
+    void SetFullScreen(bool value);
+
     //! Sets the number of game loops to run for each step.
     //! \param step_size Number of gameloops to run for each step.
     void SetStepSize(int step_size);

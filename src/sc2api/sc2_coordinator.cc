@@ -31,7 +31,7 @@ void RunParallel(const std::function<void(Agent* a)>& step, std::vector<Agent*>&
     }
 }
 
-int LaunchProcess(ProcessSettings& process_settings, Client* client, int window_width, int window_height, int window_start_x, int window_start_y, int port, int client_num=0) {
+int LaunchProcess(ProcessSettings& process_settings, Client* client, int window_width, int window_height, int window_start_x, int window_start_y, int port, int client_num=0, bool full_screen=false) {
     assert(client);
     process_settings.process_info.push_back(sc2::ProcessInfo());
     ProcessInfo& pi = process_settings.process_info.back();
@@ -46,7 +46,9 @@ int LaunchProcess(ProcessSettings& process_settings, Client* client, int window_
     };
 
     // DirectX will fail if multiple games try to launch in fullscreen mode. Force them into windowed mode.
-    cl.push_back("-displayMode"); cl.push_back("0");
+    if (!full_screen) {
+        cl.push_back("-displayMode"); cl.push_back("0");
+    }
 
     if (process_settings.data_version.size() > 0) {
         cl.push_back("-dataVersion"); cl.push_back(process_settings.data_version);
@@ -87,6 +89,7 @@ int LaunchProcesses(ProcessSettings& process_settings, std::vector<Client*> clie
     // Start an sc2 process for each bot.
     int clientIndex = 0;
     for (auto c : clients) {
+        bool full_screen = clientIndex == 0 && process_settings.full_screen;
         last_port = LaunchProcess(process_settings, 
             c, 
             window_width, 
@@ -94,7 +97,8 @@ int LaunchProcesses(ProcessSettings& process_settings, std::vector<Client*> clie
             window_start_x, 
             window_start_y, 
             process_settings.port_start + static_cast<int>(process_settings.process_info.size()) - 1, 
-            clientIndex++);
+            clientIndex++,
+            full_screen);
     }
 
     // Since connect is blocking do it after the processes are launched.
@@ -766,6 +770,10 @@ void Coordinator::AddReplayObserver(ReplayObserver* replay_observer) {
 
 void Coordinator::SetMultithreaded(bool value) {
     imp_->process_settings_.multi_threaded = value;
+}
+
+void Coordinator::SetFullScreen(bool value) {
+    imp_->process_settings_.full_screen = value;
 }
 
 void Coordinator::SetRealtime(bool value) {
